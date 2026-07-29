@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lab Test Results</title>
+    <meta name="description" content="Live Lab Test Results Tracking">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="light-mode">
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-top">
+                <div class="header-logo">
+                    <img src="logo.jpg" alt="Babylon Logo" class="logo-img">
+                    <h1>Lab Results</h1>
+                </div>
+                <div class="header-actions">
+                    <div id="refreshStatus" class="refresh-status"></div>
+                    <div class="menu-container">
+                        <button id="menuBtn" class="icon-btn"><i class="fas fa-bars"></i></button>
+                        <div id="dropdownMenu" class="dropdown-menu hidden">
+                            <button id="themeToggle" class="dropdown-item"><i class="fas fa-moon"></i> Dark Mode</button>
+                            <button id="aboutBtn" class="dropdown-item"><i class="fas fa-info-circle"></i> About App</button>
+                            <button id="refreshBtn" class="dropdown-item"><i class="fas fa-sync-alt"></i> Refresh Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search by Lot, Buyer, or ATL...">
+                <button id="clearSearch" class="clear-btn hidden"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="status-bar">
+                <span id="dataStatus">Loading…</span>
+                <span id="resultCount" class="badge">0</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <div id="loader" class="loader-container">
+                <div class="spinner"></div>
+                <p>Fetching Live Data...</p>
+            </div>
+
+            <div id="errorState" class="error-container hidden">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Failed to load data. Check your connection.</p>
+                <button id="retryBtn" class="btn primary-btn"><i class="fas fa-redo"></i> Retry</button>
+            </div>
+
+            <div id="emptyState" class="empty-container hidden">
+                <i class="fas fa-inbox"></i>
+                <p>No results found.</p>
+            </div>
+
+            <div id="resultsList" class="results-list hidden"></div>
+
+            <!-- Pagination (hidden while searching / when only 1 page) -->
+            <div id="paginationBar" class="pagination-bar hidden">
+                <button id="prevPageBtn" class="page-btn" disabled><i class="fas fa-chevron-left"></i> Prev</button>
+                <span id="pageIndicator" class="page-indicator">Page 1</span>
+                <button id="nextPageBtn" class="page-btn">Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Lot Details Modal -->
+    <div id="detailsModal" class="modal-overlay hidden">
+        <div class="modal-content report-modal">
+            <div class="modal-header">
+                <h2>Full Details</h2>
+                <button id="closeModalBtn" class="icon-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div id="reportContent" class="report-container">
+
+                    <!-- Details -->
+                    <section class="detail-section">
+                        <h4 class="section-title">Details</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item"><span class="detail-label">Buyer</span><span class="detail-value" id="repBuyer"></span></div>
+                            <div class="detail-item"><span class="detail-label">Date</span><span class="detail-value" id="repDate"></span></div>
+                            <div class="detail-item"><span class="detail-label">Order No</span><span class="detail-value" id="repOrder"></span></div>
+                            <div class="detail-item"><span class="detail-label">Req. GSM</span><span class="detail-value" id="repReqGsm"></span></div>
+                            <div class="detail-item"><span class="detail-label">Found GSM</span><span class="detail-value" id="repGsmResult"></span></div>
+                            <div class="detail-item"><span class="detail-label">Batch</span><span class="detail-value" id="repBatch"></span></div>
+                            <div class="detail-item"><span class="detail-label">Quantity</span><span class="detail-value" id="repQty"></span></div>
+                            <div class="detail-item"><span class="detail-label">Req. Dia</span><span class="detail-value" id="repReqDia"></span></div>
+                            <div class="detail-item"><span class="detail-label">Composition</span><span class="detail-value" id="repComposition"></span></div>
+                            <div class="detail-item"><span class="detail-label">Colour</span><span class="detail-value" id="repColor"></span></div>
+                            <div class="detail-item"><span class="detail-label">Fabric Type</span><span class="detail-value" id="repFabType"></span></div>
+                            <div class="detail-item"><span class="detail-label">Report No</span><span class="detail-value" id="repReport"></span></div>
+                        </div>
+                    </section>
+
+                    <!-- Result -->
+                    <section class="detail-section">
+                        <h4 class="section-title">Result</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item"><span class="detail-label">Length</span><span class="detail-value highlightable" id="repLength"></span></div>
+                            <div class="detail-item"><span class="detail-label">Width</span><span class="detail-value highlightable" id="repWidth"></span></div>
+                            <div class="detail-item"><span class="detail-label">Twisting</span><span class="detail-value highlightable" id="repTwisting"></span></div>
+                            <div class="detail-item"><span class="detail-label">Dry Rubbing</span><span class="detail-value" id="repRubbingDry"></span></div>
+                            <div class="detail-item"><span class="detail-label">Wet Rubbing</span><span class="detail-value" id="repRubbingWet"></span></div>
+                            <div class="detail-item"><span class="detail-label">CF to Wash (Sta)</span><span class="detail-value" id="repCfWashSta"></span></div>
+                            <div class="detail-item"><span class="detail-label">CF to Wash C.C</span><span class="detail-value" id="repCfWashCC"></span></div>
+                            <div class="detail-item"><span class="detail-label">CF to Wash C.S</span><span class="detail-value" id="repCfWashCS"></span></div>
+                            <div class="detail-item"><span class="detail-label">pH</span><span class="detail-value" id="repPh"></span></div>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="shareResultBtn" class="btn whatsapp-btn">
+                    <i class="fab fa-whatsapp"></i> Share Result
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="aboutModal" class="modal-overlay hidden">
+        <div class="modal-content about-modal">
+            <div class="modal-header">
+                <h2>About App</h2>
+                <button id="closeAboutBtn" class="icon-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="developer-info">
+                    <div class="avatar">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h3>MD ROKON</h3>
+                    <p class="role">Developer & Creator</p>
+                    <div class="contact-links">
+                        <a href="tel:01647710985" class="contact-item">
+                            <i class="fas fa-phone-alt"></i> 01647710985
+                        </a>
+                        <a href="mailto:mrokon01@gmail.com" class="contact-item">
+                            <i class="fas fa-envelope"></i> mrokon01@gmail.com
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
